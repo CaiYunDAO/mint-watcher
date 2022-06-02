@@ -5,6 +5,11 @@ function get(path) {
     minVersion: "TLSv1.3",
     maxVersion: "TLSv1.3",
   });
+
+  session.on("error", (err) => {
+    reject(err);
+  });
+
   const req = session.request({
     [http2.constants.HTTP2_HEADER_AUTHORITY]: "api.opensea.io",
     [http2.constants.HTTP2_HEADER_METHOD]: http2.constants.HTTP2_METHOD_GET,
@@ -21,10 +26,12 @@ function get(path) {
     });
     req.on("end", () => {
       session.close();
-      try {
-        resolve(JSON.parse(data));
-      } catch (e) {
-        reject(e);
+      if (data) {
+        try {
+          resolve(JSON.parse(data));
+        } catch (e) {
+          reject(e);
+        }
       }
     });
     req.on("error", (err) => {
